@@ -1,7 +1,5 @@
 package common;
 
-import akka.serialization.JavaSerializer;
-
 import java.io.Serializable;
 
 public class Request implements Serializable{

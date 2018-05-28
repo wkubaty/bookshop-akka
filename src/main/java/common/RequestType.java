@@ -1,6 +1,8 @@
 package common;
 
-public enum RequestType {
+import java.io.Serializable;
+
+public enum RequestType implements Serializable {
     SEARCH,
     ORDER,
     STREAM

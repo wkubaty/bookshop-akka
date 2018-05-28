@@ -1,9 +1,6 @@
 package server;
 
-import akka.actor.AbstractActor;
-import akka.actor.AllForOneStrategy;
-import akka.actor.Props;
-import akka.actor.SupervisorStrategy;
+import akka.actor.*;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.DeciderBuilder;
@@ -17,14 +14,14 @@ import static akka.actor.SupervisorStrategy.restart;
 public class ServerActor extends AbstractActor{
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
 
-    private String path = "akka.tcp://local_system@127.0.0.1:2552/user/local";
+    private String path = "akka.tcp://client@127.0.0.1:2552/user/local";
 
     private final static HashMap<RequestType, String> requestWorkerMap ;
     static {
         requestWorkerMap = new HashMap<>();
-        requestWorkerMap.put(RequestType.SEARCH, "searchWorker");
+        requestWorkerMap.put(RequestType.SEARCH, "searchWorkersManager");
         requestWorkerMap.put(RequestType.ORDER, "orderWorker");
-        requestWorkerMap.put(RequestType.STREAM, "streamWorker");
+        requestWorkerMap.put(RequestType.STREAM, "streamWorkersManager");
     }
 
     @Override
@@ -40,15 +37,20 @@ public class ServerActor extends AbstractActor{
                     }
                 })
                 .match(SearchResponse.class, searchResponse -> {
+                    log.info("Sending search response to client");
                     getContext().actorSelection(path).tell(searchResponse, getSelf());
-
                 })
                 .match(OrderResponse.class, orderResponse -> {
+                    log.info("Sending order response to client");
                     getContext().actorSelection(path).tell(orderResponse, getSelf());
                 })
                 .match(StreamResponse.class, streamResponse -> {
+                    log.info("Sending stream response to client");
                     getContext().actorSelection(path).tell(streamResponse, getSelf());
-
+                })
+                .match(ReceiveTimeout.class, timeout -> {
+                    log.info("Sending timeout to client");
+                    getContext().actorSelection(path).tell(timeout, getSelf());
                 })
                 .matchAny(o -> log.info("received unknown message"))
                 .build();
@@ -56,13 +58,13 @@ public class ServerActor extends AbstractActor{
 
     @Override
     public void preStart() throws Exception {
-        context().actorOf(Props.create(SearchWorker.class), "searchWorker");
+        context().actorOf(Props.create(SearchWorkersManager.class), "searchWorkersManager");
         context().actorOf(Props.create(OrderWorker.class), "orderWorker");
-        context().actorOf(Props.create(StreamWorker.class), "streamWorker");
+        context().actorOf(Props.create(StreamWorkersManager.class), "streamWorkersManager");
     }
 
     private static SupervisorStrategy strategy
-            = new AllForOneStrategy(10, Duration.create("1 minute"), DeciderBuilder
+            = new OneForOneStrategy(10, Duration.create("1 minute"), DeciderBuilder
             .matchAny(o -> restart())
             .build());
 

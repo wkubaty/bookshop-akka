@@ -1,6 +1,5 @@
 package server;
 
-import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import com.typesafe.config.Config;
@@ -16,8 +15,8 @@ public class ServerApp {
         File configFile = new File("remote_app2.conf");
         Config config = ConfigFactory.parseFile(configFile);
 
-        final ActorSystem system = ActorSystem.create("remote_system", config);
-        final ActorRef remote = system.actorOf(Props.create(ServerActor.class), "remote");
+        final ActorSystem system = ActorSystem.create("bookshop", config);
+        system.actorOf(Props.create(ServerActor.class), "remote");
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
@@ -25,9 +24,7 @@ public class ServerApp {
             if (line.equals("q")) {
                 break;
             }
-           // remote.tell(line, null);
         }
-
         system.terminate();
 
     }

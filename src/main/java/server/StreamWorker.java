@@ -24,9 +24,11 @@ public class StreamWorker extends AbstractActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Request.class, request -> {
-                    String path = getFilePath(getFilePath(request.getTitle()));
+                    String path = getFilePath(request.getTitle());
                     File file = new File(path);
-                    if(!file.exists() && !file.canRead()){
+
+                    if(!file.exists() || !file.canRead()){
+                        log.error("No such file: " + file.getAbsolutePath());
                         sender().tell(new StreamResponse(null), getSelf());
                     } else {
                         FileIO.fromPath(Paths.get(path))

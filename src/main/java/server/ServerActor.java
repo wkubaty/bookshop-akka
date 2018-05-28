@@ -57,7 +57,7 @@ public class ServerActor extends AbstractActor{
     }
 
     @Override
-    public void preStart() throws Exception {
+    public void preStart() {
         context().actorOf(Props.create(SearchWorkersManager.class), "searchWorkersManager");
         context().actorOf(Props.create(OrderWorker.class), "orderWorker");
         context().actorOf(Props.create(StreamWorkersManager.class), "streamWorkersManager");

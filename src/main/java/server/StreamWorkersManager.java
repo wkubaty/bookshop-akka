@@ -27,7 +27,7 @@ public class StreamWorkersManager extends AbstractActor{
                 })
                 .match(StreamResponse.class, response -> {
                     context().parent().tell(response, getSelf());
-                    if(response.getLine().equals("EOF")){
+                    if(response.getLine()==null || "EOF".equals(response.getLine())){
                         availableActors.add(sender());
                     }
                 })
@@ -36,7 +36,7 @@ public class StreamWorkersManager extends AbstractActor{
     }
 
     @Override
-    public void preStart() throws Exception {
+    public void preStart(){
         for(int i = 0; i < 10; i++){
             ActorRef actor = context().actorOf(Props.create(StreamWorker.class), "streamWorker" + i);
             availableActors.add(actor);

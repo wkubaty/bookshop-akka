@@ -54,7 +54,7 @@ public class SearchWorker extends AbstractActor {
     }
 
     @Override
-    public void preStart() throws Exception {
+    public void preStart() {
         context().actorOf(Props.create(DatabaseSearcher.class, 1), "databaseSearcher1");
         context().actorOf(Props.create(DatabaseSearcher.class, 2), "databaseSearcher2");
     }
